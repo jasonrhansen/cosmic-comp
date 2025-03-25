@@ -2602,6 +2602,8 @@ impl Shell {
             );
         }
 
+        let was_fullscreen = window_state.was_fullscreen.is_some();
+
         let focus_target = if let Some(f) = window_state.was_fullscreen {
             if to_workspace.fullscreen.is_some() {
                 if let Some((mapped, layer, previous_workspace)) = to_workspace.remove_fullscreen()
@@ -2650,6 +2652,10 @@ impl Shell {
                 toplevel_enter_output(&toplevel, &to_output);
             }
             toplevel_enter_workspace(&toplevel, to);
+        }
+
+        if !was_fullscreen && window_state.was_maximized {
+            let _ = self.maximize_request(mapped, &any_seat, false);
         }
 
         new_pos.map(|pos| (focus_target, pos))

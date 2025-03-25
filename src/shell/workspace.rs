@@ -185,6 +185,7 @@ pub struct FocusStacks(HashMap<Seat<State>, IndexSet<CosmicMapped>>);
 pub struct ManagedState {
     pub layer: ManagedLayer,
     pub was_fullscreen: Option<FullscreenSurface>,
+    pub was_maximized: bool,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ManagedLayer {
@@ -402,7 +403,8 @@ impl Workspace {
             .unwrap_or(false)
             .then(|| self.fullscreen.take().unwrap());
 
-        if mapped.maximized_state.lock().unwrap().is_some() {
+        let was_maximized = mapped.maximized_state.lock().unwrap().is_some();
+        if was_maximized {
             // If surface is maximized then unmaximize it, so it is assigned to only one layer
             let _ = self.unmaximize_request(mapped);
         }
@@ -438,11 +440,13 @@ impl Workspace {
             Some(ManagedState {
                 layer: ManagedLayer::Floating,
                 was_fullscreen,
+                was_maximized,
             })
         } else if was_tiling {
             Some(ManagedState {
                 layer: ManagedLayer::Tiling,
                 was_fullscreen,
+                was_maximized,
             })
         } else {
             None
